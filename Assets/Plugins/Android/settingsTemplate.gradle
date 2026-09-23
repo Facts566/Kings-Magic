@@ -1,0 +1,65 @@
+pluginManagement {
+    repositories {
+        **ARTIFACTORYREPOSITORY**
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+
+buildscript {
+    repositories {
+        mavenLocal()
+        maven { url 'https://maven.google.com' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools:r8:8.3.37'
+    }
+}
+
+include ':launcher', ':unityLibrary'
+**INCLUDES**
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        **ARTIFACTORYREPOSITORY**
+        google()
+        mavenCentral()
+// Android Resolver Repos Start
+        def unityProjectPath = $/file:///**DIR_UNITYPROJECT**/$.replace("\\", "/")
+        maven {
+            url "https://maven.google.com/" // Assets/YandexMobileAds/Editor/YandexMobileadsMediationDependencies.xml:13
+        }
+        maven {
+            url "https://android-sdk.is.com/" // Assets/YandexMobileAds/Editor/YandexMobileadsMediationDependencies.xml:13
+        }
+        maven {
+            url "https://artifact.bytedance.com/repository/pangle" // Assets/YandexMobileAds/Editor/YandexMobileadsMediationDependencies.xml:13
+        }
+        maven {
+            url "https://sdk.tapjoy.com/" // Assets/YandexMobileAds/Editor/YandexMobileadsMediationDependencies.xml:13
+        }
+        maven {
+            url "https://artifactory.bidmachine.io/bidmachine" // Assets/YandexMobileAds/Editor/YandexMobileadsMediationDependencies.xml:13
+        }
+        maven {
+            url "https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea" // Assets/YandexMobileAds/Editor/YandexMobileadsMediationDependencies.xml:13
+        }
+        maven {
+            url "https://cboost.jfrog.io/artifactory/chartboost-ads/" // Assets/YandexMobileAds/Editor/YandexMobileadsMediationDependencies.xml:13
+        }
+        maven {
+            url "https://dl.appnext.com/" // Assets/YandexMobileAds/Editor/YandexMobileadsMediationDependencies.xml:13
+        }
+        maven {
+            url "https://repo1.maven.org/maven2/" // Assets/YandexMobileAds/Editor/YandexMobileadsMediationDependencies.xml:13
+        }
+        mavenLocal()
+// Android Resolver Repos End
+        flatDir {
+            dirs "${project(':unityLibrary').projectDir}/libs"
+        }
+    }
+}

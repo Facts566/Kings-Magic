@@ -1,0 +1,63 @@
+/*
+ * This file is a part of the Yandex Advertising Network
+ *
+ * Version for iOS (C) 2023 YANDEX
+ *
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at https://legal.yandex.com/partner_ch/
+ */
+
+using UnityEngine;
+using YandexMobileAds.Common;
+using Io.AppMetrica.AdRevenueAdapter;
+
+namespace YandexMobileAds.Platforms.Android
+{
+    public class MobileAdsClient : AndroidJavaProxy, IMobileAdsClient
+    {
+        private static MobileAdsClient _instance;
+        private static readonly object _lockObject = new object();
+
+        public static MobileAdsClient GetInstance()
+        {
+            if (_instance == null)
+            {
+                lock (_lockObject)
+                {
+                    if (_instance == null)
+                        _instance = new MobileAdsClient();
+                }
+            }
+            return _instance;
+        }
+
+        private readonly AndroidJavaClass _mobileAdsClass;
+
+        private MobileAdsClient() : base(Utils.MobileAdsClassName)
+        {
+            AppMetricaAdRevenueAdapter.Activate();
+            this._mobileAdsClass = new AndroidJavaClass(Utils.MobileAdsClassName);
+        }
+
+        public void SetUserConsent(bool consent)
+        {
+            this._mobileAdsClass.CallStatic("setUserConsent", consent);
+        }
+
+        public void SetLocationTracking(bool enabled)
+        {
+            this._mobileAdsClass.CallStatic("setLocationTracking", enabled);
+        }
+
+        public void SetAgeRestricted(bool ageRestricted)
+        {
+            this._mobileAdsClass.CallStatic("setAgeRestricted", ageRestricted);
+        }
+
+        public void ShowDebugPanel()
+        {   
+            AndroidJavaObject activity = Utils.GetCurrentActivity(); 
+            this._mobileAdsClass.CallStatic("showDebugPanel", activity);
+        }
+    }
+}
