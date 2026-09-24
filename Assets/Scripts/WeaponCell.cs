@@ -94,7 +94,10 @@ public class WeaponCell : MonoBehaviour, IPointerClickHandler
         else if (isEquipped)
         {
             backgroundImage.color = equippedColor;
-            transform.localScale = initialScale * equippedScale;
+            if (cellIndex == 1)
+                transform.localScale = initialScale;
+            else
+                transform.localScale = initialScale * equippedScale;
         }
         else
         {
