@@ -193,13 +193,13 @@ public class EnemyAttack : MonoBehaviour
             player_hp_slider.value = player_hp;
 
         if (player_hp_text != null)
-            player_hp_text.text = player_hp.ToString() + "/" + max_player_hp.ToString();
+            player_hp_text.text = "HP " + player_hp.ToString() + "/" + max_player_hp.ToString();
 
         if (player_energy_slider != null)
             player_energy_slider.value = player_energy;
 
         if (player_energy_text != null)
-            player_energy_text.text = player_energy.ToString() + "/" + max_player_energy.ToString();
+            player_energy_text.text = "ST " + player_energy.ToString() + "/" + max_player_energy.ToString();
     }
 
     public void SetMaxStats(int newMaxHp, int newMaxEnergy)
