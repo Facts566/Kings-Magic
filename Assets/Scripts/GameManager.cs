@@ -277,13 +277,28 @@ public class GameManager : MonoBehaviour
         return 1f + damagePercentPerLevel * Mathf.Max(0, statLevel - 1);
     }
 
+    public float GetLevelProgressPercent()
+    {
+        if (level >= maxLevel)
+            return 100f;
+        int needed = XpNeededForLevelUp();
+        if (needed <= 0)
+            return 0f;
+        return Mathf.Clamp01((float)xp / needed) * 100f;
+    }
+
     public void RefreshUI()
     {
         if (coinsText != null)
             coinsText.text = coins.ToString();
 
         if (levelText != null)
-            levelText.text = "Lvl " + level.ToString();
+        {
+            if (level >= maxLevel)
+                levelText.text = "Lvl " + level.ToString() + " MAX";
+            else
+                levelText.text = "Lvl " + level.ToString() + " " + Mathf.FloorToInt(GetLevelProgressPercent()).ToString() + "%";
+        }
 
         if (pointsText != null)
             pointsText.text = "Очки:               " + statPoints.ToString();
