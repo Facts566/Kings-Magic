@@ -20,6 +20,26 @@ public class PlayerAttack : MonoBehaviour
     public float hitScale = 1.15f;
     public float hitDuration = 0.12f;
 
+    [Header("Enemy tiers")]
+    public int tier2MinPlayerLevel = 10;
+    public string tier1Name = "Бандит";
+    public int tier1EnemyLevel = 5;
+    public int tier1Hp = 100;
+    public int tier1Damage = 3;
+    public int tier1Coins = 75;
+    public int tier1Xp = 70;
+    public string tier2Name = "Джунглевый житель";
+    public int tier2EnemyLevel = 14;
+    public int tier2Hp = 170;
+    public int tier2Damage = 9;
+    public int tier2Coins = 85;
+    public int tier2Xp = 230;
+    public Text enemyNameText;
+    public Sprite tier1EnemySprite;
+    public Sprite tier2EnemySprite;
+    public Sprite tier1BackgroundSprite;
+    public Sprite tier2BackgroundSprite;
+
     private EnemyAttack enemyAttack;
     private int maxEnemyHp;
     private Coroutine hitAnimCoroutine;
@@ -34,9 +54,62 @@ public class PlayerAttack : MonoBehaviour
         inspectorMaxHp = enemy_hp;
     }
 
+    public bool IsTier2()
+    {
+        return GameManager.Instance != null && GameManager.Instance.level >= tier2MinPlayerLevel;
+    }
+
+    private void ApplyTier()
+    {
+        bool t2 = IsTier2();
+
+        maxEnemyHp = t2 ? tier2Hp : tier1Hp;
+        if (maxEnemyHp <= 0) maxEnemyHp = inspectorMaxHp;
+        if (maxEnemyHp <= 0) maxEnemyHp = 100;
+
+        if (enemyAttack != null)
+            enemyAttack.enemy_damage = t2 ? tier2Damage : tier1Damage;
+
+        if (enemyObject != null)
+        {
+            SpriteRenderer sr = enemyObject.GetComponentInChildren<SpriteRenderer>();
+            if (sr != null)
+            {
+                Sprite s = t2 ? tier2EnemySprite : tier1EnemySprite;
+                if (s != null)
+                    sr.sprite = s;
+            }
+        }
+
+        GameObject bg = GameObject.Find("Background1");
+        if (bg != null)
+        {
+            SpriteRenderer bsr = bg.GetComponent<SpriteRenderer>();
+            if (bsr != null)
+            {
+                Sprite b = t2 ? tier2BackgroundSprite : tier1BackgroundSprite;
+                if (b != null)
+                    bsr.sprite = b;
+            }
+        }
+
+        if (enemyNameText != null)
+            enemyNameText.text = (t2 ? tier2Name : tier1Name) + " " + (t2 ? tier2EnemyLevel : tier1EnemyLevel).ToString() + " ур";
+
+        if (enemy_hp_slider != null)
+            enemy_hp_slider.maxValue = maxEnemyHp;
+    }
+
     void Start()
     {
-        maxEnemyHp = inspectorMaxHp;
+        if (enemyAttack == null)
+        {
+            enemyAttack = FindObjectOfType<EnemyAttack>();
+            if (enemyAttack != null)
+                enemyObject = enemyAttack.gameObject;
+        }
+
+        ApplyTier();
         if (maxEnemyHp <= 0) maxEnemyHp = 100;
         if (PlayerPrefs.HasKey(SaveEnemyHpKey))
         {
@@ -58,13 +131,6 @@ public class PlayerAttack : MonoBehaviour
         else
         {
             enemy_hp = maxEnemyHp;
-        }
-
-        if (enemyAttack == null)
-        {
-            enemyAttack = FindObjectOfType<EnemyAttack>();
-            if (enemyAttack != null)
-                enemyObject = enemyAttack.gameObject;
         }
 
         if (enemyObject != null)
@@ -146,7 +212,10 @@ public class PlayerAttack : MonoBehaviour
                     SetEnemyUIEnabled(false);
 
                     if (GameManager.Instance != null)
-                        GameManager.Instance.OnEnemyKilled();
+                    {
+                        bool t2 = IsTier2();
+                        GameManager.Instance.OnEnemyKilled(t2 ? tier2Coins : tier1Coins, t2 ? tier2Xp : tier1Xp);
+                    }
 
                     StartCoroutine(RespawnEnemy());
                 }
@@ -197,10 +266,26 @@ public class PlayerAttack : MonoBehaviour
         hitAnimCoroutine = null;
     }
 
+    // Пересчёт тира на живом враге (например, уровень упал 10→9 после смерти):
+    // фон, спрайт, урон и макс. хп меняются сразу, текущее хп клампится
+    public void RefreshTierLive()
+    {
+        ApplyTier();
+        if (!isEnemyDead)
+        {
+            if (enemy_hp > maxEnemyHp)
+                enemy_hp = maxEnemyHp;
+            UpdateEnemyUI();
+            SaveEnemyHp();
+        }
+    }
+
     private IEnumerator RespawnEnemy()
     {
         yield return new WaitForSeconds(respawnDelay);
 
+        // уровень мог измениться (килл дал опыт) — пересчитываем тир: фон, спрайт, урон, хп
+        ApplyTier();
         enemy_hp = maxEnemyHp;
         isEnemyDead = false;
         SetEnemyVisible(true);

@@ -151,6 +151,10 @@ public class EnemyAttack : MonoBehaviour
         isPlayerDead = false;
         UpdatePlayerUI();
         SaveHp();
+
+        // уровень мог упасть 10→9 (штраф смерти) — сразу откатываем фон и врага на тир-1
+        if (PA != null)
+            PA.RefreshTierLive();
     }
 
     private IEnumerator RegenCoroutine()

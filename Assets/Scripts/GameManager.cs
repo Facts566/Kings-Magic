@@ -100,8 +100,13 @@ public class GameManager : MonoBehaviour
 
     public void OnEnemyKilled()
     {
-        coins += coinsPerKill;
-        AddExperience(xpPerKill);
+        OnEnemyKilled(coinsPerKill, xpPerKill);
+    }
+
+    public void OnEnemyKilled(int coinsReward, int xpReward)
+    {
+        coins += coinsReward;
+        AddExperience(xpReward);
         RefreshUI();
         Save();
     }
