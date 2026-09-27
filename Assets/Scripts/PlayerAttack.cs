@@ -29,25 +29,49 @@ public class PlayerAttack : MonoBehaviour
 
     [Header("Enemy tiers")]
     public int tier2MinPlayerLevel = 10;
+    public int tier3MinPlayerLevel = 15;
+    public int tier4MinPlayerLevel = 25;
     public string tier1Name = "Бандит";
     public int tier1EnemyLevel = 5;
     public int tier1Hp = 100;
     public int tier1Damage = 3;
     public int tier1Coins = 75;
     public int tier1Xp = 70;
+    public int tier1Honor = 0;
     public string tier2Name = "Джунглевый житель";
     public int tier2EnemyLevel = 14;
     public int tier2Hp = 170;
     public int tier2Damage = 9;
     public int tier2Coins = 85;
     public int tier2Xp = 230;
+    public int tier2Honor = 0;
+    public string tier3Name = "Горилла";
+    public int tier3EnemyLevel = 20;
+    public int tier3Hp = 220;
+    public int tier3Damage = 14;
+    public int tier3Coins = 205;
+    public int tier3Xp = 750;
+    public int tier3Honor = 0;
+    public string tier4Name = "Джунглевый Президент";
+    public int tier4EnemyLevel = 25;
+    public int tier4Hp = 950;
+    public int tier4Damage = 28;
+    public int tier4Coins = 2150;
+    public int tier4Xp = 11000;
+    public int tier4Honor = 625;
     public string tier1Type = "Враг";
     public string tier2Type = "Враг";
+    public string tier3Type = "Враг";
+    public string tier4Type = "Босс";
     public Text enemyNameText;
     public Sprite tier1EnemySprite;
     public Sprite tier2EnemySprite;
+    public Sprite tier3EnemySprite;
+    public Sprite tier4EnemySprite;
     public Sprite tier1BackgroundSprite;
     public Sprite tier2BackgroundSprite;
+    public Sprite tier3BackgroundSprite;
+    public Sprite tier4BackgroundSprite;
 
     private EnemyAttack enemyAttack;
     private int maxEnemyHp;
@@ -63,47 +87,86 @@ public class PlayerAttack : MonoBehaviour
         inspectorMaxHp = enemy_hp;
     }
 
+    // 0 = Бандит (<10), 1 = Джунглевый житель (10+), 2 = Горилла (15+), 3 = Президент (25+)
+    public int GetTierIndex()
+    {
+        if (GameManager.Instance == null)
+            return 0;
+        int lvl = GameManager.Instance.level;
+        if (lvl >= tier4MinPlayerLevel) return 3;
+        if (lvl >= tier3MinPlayerLevel) return 2;
+        if (lvl >= tier2MinPlayerLevel) return 1;
+        return 0;
+    }
+
     public bool IsTier2()
     {
-        return GameManager.Instance != null && GameManager.Instance.level >= tier2MinPlayerLevel;
+        return GetTierIndex() >= 1;
+    }
+
+    private void TierStats(int t, out string name, out int level, out int hp, out int damage, out Sprite enemySprite, out Sprite bgSprite)
+    {
+        switch (t)
+        {
+            case 3:
+                name = tier4Name; level = tier4EnemyLevel; hp = tier4Hp; damage = tier4Damage;
+                enemySprite = tier4EnemySprite; bgSprite = tier4BackgroundSprite;
+                break;
+            case 2:
+                name = tier3Name; level = tier3EnemyLevel; hp = tier3Hp; damage = tier3Damage;
+                enemySprite = tier3EnemySprite; bgSprite = tier3BackgroundSprite;
+                break;
+            case 1:
+                name = tier2Name; level = tier2EnemyLevel; hp = tier2Hp; damage = tier2Damage;
+                enemySprite = tier2EnemySprite; bgSprite = tier2BackgroundSprite;
+                break;
+            default:
+                name = tier1Name; level = tier1EnemyLevel; hp = tier1Hp; damage = tier1Damage;
+                enemySprite = tier1EnemySprite; bgSprite = tier1BackgroundSprite;
+                break;
+        }
+    }
+
+    private void TierRewards(int t, out int coins, out int xp, out int honor)
+    {
+        switch (t)
+        {
+            case 3: coins = tier4Coins; xp = tier4Xp; honor = tier4Honor; break;
+            case 2: coins = tier3Coins; xp = tier3Xp; honor = tier3Honor; break;
+            case 1: coins = tier2Coins; xp = tier2Xp; honor = tier2Honor; break;
+            default: coins = tier1Coins; xp = tier1Xp; honor = tier1Honor; break;
+        }
     }
 
     private void ApplyTier()
     {
-        bool t2 = IsTier2();
+        int t = GetTierIndex();
+        TierStats(t, out string eName, out int eLevel, out int eHp, out int eDamage, out Sprite eSprite, out Sprite bSprite);
 
-        maxEnemyHp = t2 ? tier2Hp : tier1Hp;
+        maxEnemyHp = eHp;
         if (maxEnemyHp <= 0) maxEnemyHp = inspectorMaxHp;
         if (maxEnemyHp <= 0) maxEnemyHp = 100;
 
         if (enemyAttack != null)
-            enemyAttack.enemy_damage = t2 ? tier2Damage : tier1Damage;
+            enemyAttack.enemy_damage = eDamage;
 
         if (enemyObject != null)
         {
             SpriteRenderer sr = enemyObject.GetComponentInChildren<SpriteRenderer>();
-            if (sr != null)
-            {
-                Sprite s = t2 ? tier2EnemySprite : tier1EnemySprite;
-                if (s != null)
-                    sr.sprite = s;
-            }
+            if (sr != null && eSprite != null)
+                sr.sprite = eSprite;
         }
 
         GameObject bg = GameObject.Find("Background1");
         if (bg != null)
         {
             SpriteRenderer bsr = bg.GetComponent<SpriteRenderer>();
-            if (bsr != null)
-            {
-                Sprite b = t2 ? tier2BackgroundSprite : tier1BackgroundSprite;
-                if (b != null)
-                    bsr.sprite = b;
-            }
+            if (bsr != null && bSprite != null)
+                bsr.sprite = bSprite;
         }
 
         if (enemyNameText != null)
-            enemyNameText.text = (t2 ? tier2Name : tier1Name) + " " + (t2 ? tier2EnemyLevel : tier1EnemyLevel).ToString() + " ур";
+            enemyNameText.text = eName + " " + eLevel.ToString() + " ур";
 
         if (enemy_hp_slider != null)
             enemy_hp_slider.maxValue = maxEnemyHp;
@@ -225,8 +288,8 @@ public class PlayerAttack : MonoBehaviour
 
                     if (GameManager.Instance != null)
                     {
-                        bool t2 = IsTier2();
-                        GameManager.Instance.OnEnemyKilled(t2 ? tier2Coins : tier1Coins, t2 ? tier2Xp : tier1Xp);
+                        TierRewards(GetTierIndex(), out int rc, out int rx, out int rh);
+                        GameManager.Instance.OnEnemyKilled(rc, rx, rh);
                     }
 
                     StartCoroutine(RespawnEnemy());

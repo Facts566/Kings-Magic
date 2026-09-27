@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour
     public float damagePercentPerLevel = 0.05f;
 
     public int coins;
+    public int honor;
     public int level = 1;
     public int xp;
     public int statPoints;
@@ -35,6 +36,7 @@ public class GameManager : MonoBehaviour
     public WeaponType currentWeaponType = WeaponType.CombatStyle;
 
     public Text coinsText;
+    public Text honorText;
     public Text levelText;
     public Text pointsText;
     public Text meleeText;
@@ -100,12 +102,18 @@ public class GameManager : MonoBehaviour
 
     public void OnEnemyKilled()
     {
-        OnEnemyKilled(coinsPerKill, xpPerKill);
+        OnEnemyKilled(coinsPerKill, xpPerKill, 0);
     }
 
     public void OnEnemyKilled(int coinsReward, int xpReward)
     {
+        OnEnemyKilled(coinsReward, xpReward, 0);
+    }
+
+    public void OnEnemyKilled(int coinsReward, int xpReward, int honorReward)
+    {
         coins += coinsReward;
+        honor += honorReward;
         AddExperience(xpReward);
         RefreshUI();
         Save();
@@ -315,6 +323,9 @@ public class GameManager : MonoBehaviour
         if (coinsText != null)
             coinsText.text = coins.ToString();
 
+        if (honorText != null)
+            honorText.text = honor.ToString();
+
         if (levelText != null)
         {
             // смена уровня — сразу новый номер, проценты внутри уровня догоняют плавно в Update()
@@ -348,6 +359,7 @@ public class GameManager : MonoBehaviour
     public void ResetProgress()
     {
         PlayerPrefs.DeleteKey("coins");
+        PlayerPrefs.DeleteKey("honor");
         PlayerPrefs.DeleteKey("level");
         PlayerPrefs.DeleteKey("xp");
         PlayerPrefs.DeleteKey("statPoints");
@@ -368,6 +380,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.Save();
 
         coins = 0;
+        honor = 0;
         level = 1;
         xp = 0;
         statPoints = 0;
@@ -422,6 +435,7 @@ public class GameManager : MonoBehaviour
     private void Save()
     {
         PlayerPrefs.SetInt("coins", coins);
+        PlayerPrefs.SetInt("honor", honor);
         PlayerPrefs.SetInt("level", level);
         PlayerPrefs.SetInt("xp", xp);
         PlayerPrefs.SetInt("statPoints", statPoints);
@@ -439,6 +453,7 @@ public class GameManager : MonoBehaviour
     private void Load()
     {
         coins = PlayerPrefs.GetInt("coins", 0);
+        honor = PlayerPrefs.GetInt("honor", 0);
         level = PlayerPrefs.GetInt("level", 1);
         if (!PlayerPrefs.HasKey("level"))
             level = 1;
