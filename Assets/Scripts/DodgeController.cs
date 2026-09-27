@@ -36,10 +36,11 @@ public class DodgeController : MonoBehaviour
     {
         if (buttonText == null) return;
 
+        string chance = "Шанс " + dodgeChance.ToString("0.#") + "%";
         if (cooldownLeft > 0f)
-            buttonText.text = "Рывок\n" + Mathf.CeilToInt(cooldownLeft).ToString() + "с";
+            buttonText.text = "Рывок\n" + Mathf.CeilToInt(cooldownLeft).ToString() + "с\n" + chance;
         else
-            buttonText.text = "Рывок\nГотов";
+            buttonText.text = "Рывок\nГотов\n" + chance;
     }
 
     public void OnDodgePressed()
