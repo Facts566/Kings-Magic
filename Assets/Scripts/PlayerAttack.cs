@@ -27,6 +27,15 @@ public class PlayerAttack : MonoBehaviour
     private float displayedEnemyHp;
     private bool enemyBarInit;
 
+    [Header("HP bar follow")]
+    [Tooltip("Отступ панели HP над головой врага в мировых единицах")]
+    public float hpBarAboveHead = 1.2f;
+
+    private RectTransform enemyHpPanel;
+    private RectTransform hpPanelParent;
+    private Canvas parentCanvas;
+    private Camera mainCam;
+
     [Header("Enemy tiers")]
     public int tier2MinPlayerLevel = 10;
     public int tier3MinPlayerLevel = 15;
@@ -220,6 +229,17 @@ public class PlayerAttack : MonoBehaviour
         displayedEnemyHp = enemy_hp;
         enemyBarInit = true;
 
+        if (enemy_hp_slider != null)
+        {
+            enemyHpPanel = enemy_hp_slider.GetComponent<RectTransform>();
+            if (enemyHpPanel != null)
+            {
+                hpPanelParent = enemyHpPanel.parent as RectTransform;
+                parentCanvas = enemyHpPanel.GetComponentInParent<Canvas>();
+            }
+        }
+        mainCam = Camera.main;
+
         UpdateEnemyUI();
         if (enemy_hp <= 0 && !isEnemyDead)
         {
@@ -401,6 +421,39 @@ public class PlayerAttack : MonoBehaviour
         if (Mathf.Abs(displayedEnemyHp - enemy_hp) < 0.05f)
             displayedEnemyHp = enemy_hp;
         enemy_hp_slider.value = displayedEnemyHp;
+
+        FollowEnemyHpBar();
+    }
+
+    // Панель HP (полоска + цифры + имя) всегда висит над головой врага,
+    // высота учитывает реальный размер спрайта — у босса полоска выше
+    private void FollowEnemyHpBar()
+    {
+        if (enemyObject == null || enemyHpPanel == null || hpPanelParent == null)
+            return;
+        if (!enemy_hp_slider.gameObject.activeInHierarchy)
+            return;
+
+        // базовая высота без анимации удара, чтобы полоска не прыгала при попадании
+        float halfH = 1f;
+        SpriteRenderer sr = enemyObject.GetComponentInChildren<SpriteRenderer>();
+        if (sr != null && sr.sprite != null)
+        {
+            float sy = enemyScaleInit ? enemyInitialScale.y : enemyObject.transform.localScale.y;
+            if (Mathf.Abs(sy) < 0.01f) sy = 1f;
+            halfH = sr.sprite.bounds.extents.y * Mathf.Abs(sy);
+        }
+
+        Vector3 world = enemyObject.transform.position + new Vector3(0f, halfH + hpBarAboveHead, 0f);
+        Vector3 screen = mainCam != null ? mainCam.WorldToScreenPoint(world) : world;
+
+        Camera uiCam = (parentCanvas != null && parentCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            ? (parentCanvas.worldCamera != null ? parentCanvas.worldCamera : mainCam)
+            : null;
+
+        Vector2 local;
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(hpPanelParent, screen, uiCam, out local))
+            enemyHpPanel.anchoredPosition = local;
     }
 
     private void UpdateEnemyUI()

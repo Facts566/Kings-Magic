@@ -1735,23 +1735,24 @@ MonoBehaviour:
   hitScale: 1.15
   hitDuration: 0.12
   barSmoothness: 8
+  hpBarAboveHead: 1.8
   tier2MinPlayerLevel: 10
+  tier3MinPlayerLevel: 15
+  tier4MinPlayerLevel: 25
   tier1Name: "\u0411\u0430\u043D\u0434\u0438\u0442"
   tier1EnemyLevel: 5
   tier1Hp: 100
   tier1Damage: 3
   tier1Coins: 75
   tier1Xp: 70
+  tier1Honor: 0
   tier2Name: "\u0414\u0436\u0443\u043D\u0433\u043B\u0435\u0432\u044B\u0439 \u0436\u0438\u0442\u0435\u043B\u044C"
   tier2EnemyLevel: 14
   tier2Hp: 170
   tier2Damage: 9
   tier2Coins: 85
   tier2Xp: 230
-  tier1Type: "\u0412\u0440\u0430\u0433"
-  tier2Type: "\u0412\u0440\u0430\u0433"
-  tier3MinPlayerLevel: 15
-  tier4MinPlayerLevel: 25
+  tier2Honor: 0
   tier3Name: "\u0413\u043E\u0440\u0438\u043B\u043B\u0430"
   tier3EnemyLevel: 20
   tier3Hp: 220
@@ -1766,6 +1767,8 @@ MonoBehaviour:
   tier4Coins: 2150
   tier4Xp: 11000
   tier4Honor: 625
+  tier1Type: "\u0412\u0440\u0430\u0433"
+  tier2Type: "\u0412\u0440\u0430\u0433"
   tier3Type: "\u0412\u0440\u0430\u0433"
   tier4Type: "\u0411\u043E\u0441\u0441"
   enemyNameText: {fileID: 2062743625}
@@ -2002,6 +2005,7 @@ MonoBehaviour:
   meleeEnergyPerLevel: 5
   damagePercentPerLevel: 0.05
   coins: 0
+  honor: 0
   level: 1
   xp: 0
   statPoints: 0
@@ -2016,6 +2020,7 @@ MonoBehaviour:
   katanaEquipped: 0
   currentWeaponType: 0
   coinsText: {fileID: 727478501}
+  honorText: {fileID: 0}
   levelText: {fileID: 81035553}
   pointsText: {fileID: 1164918421}
   meleeText: {fileID: 1171284179}
