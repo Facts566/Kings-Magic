@@ -292,6 +292,24 @@ public class GameManager : MonoBehaviour
         return Mathf.Clamp01((float)xp / needed) * 100f;
     }
 
+    [Header("Level percent smoothing")]
+    [Tooltip("Плавность процентов уровня: меньше = медленнее и плавнее")]
+    public float levelPercentSmoothness = 6f;
+
+    private float displayedLevelPercent = -1f;
+    private int displayedLevel = -1;
+
+    private void UpdateLevelText(float percent)
+    {
+        if (levelText == null)
+            return;
+
+        if (level >= maxLevel)
+            levelText.text = "Lvl " + level.ToString() + " MAX";
+        else
+            levelText.text = "Lvl " + level.ToString() + " " + Mathf.FloorToInt(percent).ToString() + "%";
+    }
+
     public void RefreshUI()
     {
         if (coinsText != null)
@@ -299,10 +317,13 @@ public class GameManager : MonoBehaviour
 
         if (levelText != null)
         {
-            if (level >= maxLevel)
-                levelText.text = "Lvl " + level.ToString() + " MAX";
-            else
-                levelText.text = "Lvl " + level.ToString() + " " + Mathf.FloorToInt(GetLevelProgressPercent()).ToString() + "%";
+            // смена уровня — сразу новый номер, проценты внутри уровня догоняют плавно в Update()
+            if (displayedLevel != level)
+            {
+                displayedLevel = level;
+                displayedLevelPercent = GetLevelProgressPercent();
+                UpdateLevelText(displayedLevelPercent);
+            }
         }
 
         if (pointsText != null)
@@ -372,6 +393,25 @@ public class GameManager : MonoBehaviour
             SaberShop shop = FindObjectOfType<SaberShop>();
             if (shop != null)
                 shop.ResetSaber();
+        }
+
+        if (levelText != null)
+        {
+            float target = GetLevelProgressPercent();
+            if (displayedLevel != level)
+            {
+                displayedLevel = level;
+                displayedLevelPercent = target;
+                UpdateLevelText(displayedLevelPercent);
+            }
+            else if (!Mathf.Approximately(displayedLevelPercent, target))
+            {
+                float k = 1f - Mathf.Exp(-Mathf.Max(0.1f, levelPercentSmoothness) * Time.deltaTime);
+                displayedLevelPercent = Mathf.Lerp(displayedLevelPercent, target, k);
+                if (Mathf.Abs(displayedLevelPercent - target) < 0.1f)
+                    displayedLevelPercent = target;
+                UpdateLevelText(displayedLevelPercent);
+            }
         }
     }
 

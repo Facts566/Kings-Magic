@@ -1747,6 +1747,8 @@ MonoBehaviour:
   tier2Damage: 9
   tier2Coins: 85
   tier2Xp: 230
+  tier1Type: "\u0412\u0440\u0430\u0433"
+  tier2Type: "\u0412\u0440\u0430\u0433"
   enemyNameText: {fileID: 2062743625}
   tier1EnemySprite: {fileID: 21300000, guid: 43bd4c8169bdd2b6aa862fb6215e1693, type: 3}
   tier2EnemySprite: {fileID: 21300000, guid: e1d43f98220cb4c8bb9a116244b56cf0, type: 3}

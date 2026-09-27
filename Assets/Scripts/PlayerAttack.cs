@@ -20,6 +20,13 @@ public class PlayerAttack : MonoBehaviour
     public float hitScale = 1.15f;
     public float hitDuration = 0.12f;
 
+    [Header("Bar smoothing")]
+    [Tooltip("Скорость плавности полоски HP врага: меньше = медленнее и плавнее")]
+    public float barSmoothness = 8f;
+
+    private float displayedEnemyHp;
+    private bool enemyBarInit;
+
     [Header("Enemy tiers")]
     public int tier2MinPlayerLevel = 10;
     public string tier1Name = "Бандит";
@@ -34,6 +41,8 @@ public class PlayerAttack : MonoBehaviour
     public int tier2Damage = 9;
     public int tier2Coins = 85;
     public int tier2Xp = 230;
+    public string tier1Type = "Враг";
+    public string tier2Type = "Враг";
     public Text enemyNameText;
     public Sprite tier1EnemySprite;
     public Sprite tier2EnemySprite;
@@ -144,6 +153,9 @@ public class PlayerAttack : MonoBehaviour
             enemy_hp_slider.maxValue = maxEnemyHp;
             enemy_hp_slider.value = enemy_hp;
         }
+
+        displayedEnemyHp = enemy_hp;
+        enemyBarInit = true;
 
         UpdateEnemyUI();
         if (enemy_hp <= 0 && !isEnemyDead)
@@ -291,6 +303,7 @@ public class PlayerAttack : MonoBehaviour
         SetEnemyVisible(true);
         SetEnemyUIEnabled(true);
         UpdateEnemyUI();
+        SnapEnemyBar();
         SaveEnemyHp();
         // restart auto attack if it ended (we keep same coroutine, but ensure loop continues)
         // AutoAttack is infinite, but if enemy was dead we still loop; no need to restart
@@ -315,12 +328,32 @@ public class PlayerAttack : MonoBehaviour
             renderer.enabled = visible;
     }
 
+    void Update()
+    {
+        if (!enemyBarInit || enemy_hp_slider == null)
+            return;
+
+        float k = 1f - Mathf.Exp(-Mathf.Max(0.1f, barSmoothness) * Time.deltaTime);
+        displayedEnemyHp = Mathf.Lerp(displayedEnemyHp, enemy_hp, k);
+        if (Mathf.Abs(displayedEnemyHp - enemy_hp) < 0.05f)
+            displayedEnemyHp = enemy_hp;
+        enemy_hp_slider.value = displayedEnemyHp;
+    }
+
     private void UpdateEnemyUI()
     {
+        // цифры — сразу точные, полоска догоняет плавно в Update()
         if (enemy_hp_slider != null)
-            enemy_hp_slider.value = enemy_hp;
+            enemy_hp_slider.maxValue = maxEnemyHp;
 
         if (enemy_hp_text != null)
             enemy_hp_text.text = enemy_hp.ToString() + "/" + maxEnemyHp.ToString();
+    }
+
+    private void SnapEnemyBar()
+    {
+        displayedEnemyHp = enemy_hp;
+        if (enemy_hp_slider != null)
+            enemy_hp_slider.value = displayedEnemyHp;
     }
 }

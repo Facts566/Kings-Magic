@@ -24,6 +24,14 @@ public class EnemyAttack : MonoBehaviour
 
     public DodgeController dodgeController;
 
+    [Header("Bar smoothing")]
+    [Tooltip("Скорость плавности полосок: меньше = медленнее и плавнее")]
+    public float barSmoothness = 8f;
+
+    private float displayedHp;
+    private float displayedEnergy;
+    private bool barsInit;
+
     private const string SaveHpKey = "player_hp";
     private const string SaveEnergyKey = "player_energy";
 
@@ -46,6 +54,10 @@ public class EnemyAttack : MonoBehaviour
         // clamp loaded values to new max
         player_hp = Mathf.Clamp(player_hp, 0, max_player_hp);
         player_energy = Mathf.Clamp(player_energy, 0, max_player_energy);
+
+        displayedHp = player_hp;
+        displayedEnergy = player_energy;
+        barsInit = true;
 
         if (player_hp_slider != null)
             player_hp_slider.maxValue = max_player_hp;
@@ -150,6 +162,9 @@ public class EnemyAttack : MonoBehaviour
         player_energy = max_player_energy;
         isPlayerDead = false;
         UpdatePlayerUI();
+        // полное восстановление — полоски сразу полные, без анимации
+        displayedHp = player_hp;
+        displayedEnergy = player_energy;
         SaveHp();
 
         // уровень мог упасть 10→9 (штраф смерти) — сразу откатываем фон и врага на тир-1
@@ -191,16 +206,41 @@ public class EnemyAttack : MonoBehaviour
         }
     }
 
+    void Update()
+    {
+        if (!barsInit)
+            return;
+
+        float k = 1f - Mathf.Exp(-Mathf.Max(0.1f, barSmoothness) * Time.deltaTime);
+
+        if (player_hp_slider != null)
+        {
+            displayedHp = Mathf.Lerp(displayedHp, player_hp, k);
+            if (Mathf.Abs(displayedHp - player_hp) < 0.05f)
+                displayedHp = player_hp;
+            player_hp_slider.value = displayedHp;
+        }
+
+        if (player_energy_slider != null)
+        {
+            displayedEnergy = Mathf.Lerp(displayedEnergy, player_energy, k);
+            if (Mathf.Abs(displayedEnergy - player_energy) < 0.05f)
+                displayedEnergy = player_energy;
+            player_energy_slider.value = displayedEnergy;
+        }
+    }
+
     private void UpdatePlayerUI()
     {
+        // цифры — сразу точные, полоски догоняют плавно в Update()
         if (player_hp_slider != null)
-            player_hp_slider.value = player_hp;
+            player_hp_slider.maxValue = max_player_hp;
 
         if (player_hp_text != null)
             player_hp_text.text = "HP " + player_hp.ToString() + "/" + max_player_hp.ToString();
 
         if (player_energy_slider != null)
-            player_energy_slider.value = player_energy;
+            player_energy_slider.maxValue = max_player_energy;
 
         if (player_energy_text != null)
             player_energy_text.text = "ST " + player_energy.ToString() + "/" + max_player_energy.ToString();
