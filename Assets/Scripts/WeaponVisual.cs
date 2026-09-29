@@ -9,6 +9,16 @@ public class WeaponVisual : MonoBehaviour
     public float handRotation = 30f;
     public int sortingOrder = 1000;
 
+    [Header("Arm swap")]
+    [Tooltip("Рука меняет текстуру на руку-с-оружием вместо отдельного объекта оружия")]
+    public bool useArmSwap = true;
+    public Sprite armSaberSprite;
+    public Sprite armKatanaSprite;
+    public SpriteRenderer armRenderer;
+
+    private Sprite armDefaultSprite;
+    private bool armSwapReady;
+
     private const string DefaultSaberPath = "Sprites/Weapon2";
     private const string DefaultKatanaPath = "Sprites/Katana";
 
@@ -28,6 +38,27 @@ public class WeaponVisual : MonoBehaviour
     void Start()
     {
         CreateSaber();
+        InitArmSwap();
+    }
+
+    private void InitArmSwap()
+    {
+        if (armRenderer == null)
+        {
+            // скрипт висит на W1 — его же renderer и есть рука с оружием
+            armRenderer = GetComponent<SpriteRenderer>();
+            if (armRenderer == null)
+            {
+                GameObject w1 = GameObject.Find("W1");
+                if (w1 != null)
+                    armRenderer = w1.GetComponent<SpriteRenderer>();
+            }
+        }
+
+        if (armRenderer != null)
+            armDefaultSprite = armRenderer.sprite;
+
+        armSwapReady = useArmSwap && armRenderer != null && armSaberSprite != null && armKatanaSprite != null;
     }
 
     void Update()
@@ -36,7 +67,20 @@ public class WeaponVisual : MonoBehaviour
             return;
 
         GameManager gm = GameManager.Instance;
-        bool show = gm != null && (gm.saberEquipped || gm.katanaEquipped);
+        bool saber = gm != null && gm.saberEquipped;
+        bool katana = gm != null && gm.katanaEquipped;
+
+        // режим замены руки: отдельное оружие скрыто, текстура руки переключается
+        if (armSwapReady)
+        {
+            Sprite want = katana ? armKatanaSprite : (saber ? armSaberSprite : armDefaultSprite);
+            if (want != null && armRenderer.sprite != want)
+                armRenderer.sprite = want;
+            saberRenderer.enabled = false;
+            return;
+        }
+
+        bool show = saber || katana;
         saberRenderer.enabled = show;
 
         if (!show)
