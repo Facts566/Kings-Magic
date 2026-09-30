@@ -198,11 +198,6 @@ public class SaberShop : MonoBehaviour
         RefreshEquipVisual();
     }
 
-    public void ResetKatana()
-    {
-        RefreshEquipVisual();
-    }
-
     public void ShowNotOwnedMessage()
     {
         ShowMessage("Сначала купи оружие в магазине");

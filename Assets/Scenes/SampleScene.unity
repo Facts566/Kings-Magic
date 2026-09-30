@@ -1843,10 +1843,6 @@ MonoBehaviour:
   tier4Coins: 2150
   tier4Xp: 11000
   tier4Honor: 625
-  tier1Type: "\u0412\u0440\u0430\u0433"
-  tier2Type: "\u0412\u0440\u0430\u0433"
-  tier3Type: "\u0412\u0440\u0430\u0433"
-  tier4Type: "\u0411\u043E\u0441\u0441"
   enemyNameText: {fileID: 2062743625}
   tier1EnemySprite: {fileID: 21300000, guid: df65eb46c49375fa1be633550d745ae5, type: 3}
   tier2EnemySprite: {fileID: 21300000, guid: a1aef2b74a8ebfc249130f0cbe43ae22, type: 3}
@@ -1868,12 +1864,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7694c40415347849ae8f7c781988635, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  saberSprite: {fileID: 21300000, guid: 46db9209b547e673f86d446991de4b51, type: 3}
-  katanaSprite: {fileID: 21300000, guid: 23c31ce20df8424538bb84983334e411, type: 3}
-  handOffset: {x: 1.8, y: -0.5}
-  handScale: 15
-  handRotation: 30
-  sortingOrder: 1000
   useArmSwap: 1
   armSaberSprite: {fileID: 21300000, guid: f0925677ce91f3ad1a347b175fecef41, type: 3}
   armKatanaSprite: {fileID: 21300000, guid: 35baf9946c9f93268a2263a1d07c413c, type: 3}
@@ -2076,8 +2066,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a15bfc32d84a4146893cea8c219d113f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  coinsPerKill: 75
-  xpPerKill: 70
   maxLevel: 2800
   statPointsPerLevel: 3
   baseMaxHp: 100

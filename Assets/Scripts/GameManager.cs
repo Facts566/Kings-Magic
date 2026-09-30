@@ -5,8 +5,6 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    public int coinsPerKill = 75;
-    public int xpPerKill = 70;
     public int maxLevel = 2800;
     public int statPointsPerLevel = 3;
 
@@ -98,16 +96,6 @@ public class GameManager : MonoBehaviour
     public int XpNeededForLevelUp()
     {
         return level * 100;
-    }
-
-    public void OnEnemyKilled()
-    {
-        OnEnemyKilled(coinsPerKill, xpPerKill, 0);
-    }
-
-    public void OnEnemyKilled(int coinsReward, int xpReward)
-    {
-        OnEnemyKilled(coinsReward, xpReward, 0);
     }
 
     public void OnEnemyKilled(int coinsReward, int xpReward, int honorReward)

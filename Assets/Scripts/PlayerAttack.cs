@@ -27,6 +27,21 @@ public class PlayerAttack : MonoBehaviour
     private float displayedEnemyHp;
     private bool enemyBarInit;
 
+    [Header("Hit shake")]
+    [Tooltip("Тряска фона при ударе")]
+    public float backgroundShakeAmp = 0.12f;
+    [Tooltip("Тряска рук при ударе (слабее фона)")]
+    public float armsShakeAmp = 0.05f;
+    public float shakeDuration = 0.18f;
+
+    private Coroutine shakeCoroutine;
+    private Transform bgTransform;
+    private Transform armTransform;
+    private Vector3 bgInitPos;
+    private Vector3 w1InitPos;
+    private Vector3 armInitPos;
+    private bool shakeInit;
+
     [Header("HP bar follow")]
     [Tooltip("Отступ панели HP над головой врага в мировых единицах")]
     public float hpBarAboveHead = 1.2f;
@@ -68,10 +83,6 @@ public class PlayerAttack : MonoBehaviour
     public int tier4Coins = 2150;
     public int tier4Xp = 11000;
     public int tier4Honor = 625;
-    public string tier1Type = "Враг";
-    public string tier2Type = "Враг";
-    public string tier3Type = "Враг";
-    public string tier4Type = "Босс";
     public Text enemyNameText;
     public Sprite tier1EnemySprite;
     public Sprite tier2EnemySprite;
@@ -106,11 +117,6 @@ public class PlayerAttack : MonoBehaviour
         if (lvl >= tier3MinPlayerLevel) return 2;
         if (lvl >= tier2MinPlayerLevel) return 1;
         return 0;
-    }
-
-    public bool IsTier2()
-    {
-        return GetTierIndex() >= 1;
     }
 
     private void TierStats(int t, out string name, out int level, out int hp, out int damage, out Sprite enemySprite, out Sprite bgSprite)
@@ -229,6 +235,8 @@ public class PlayerAttack : MonoBehaviour
         displayedEnemyHp = enemy_hp;
         enemyBarInit = true;
 
+        InitHitShake();
+
         if (enemy_hp_slider != null)
         {
             enemyHpPanel = enemy_hp_slider.GetComponent<RectTransform>();
@@ -299,6 +307,7 @@ public class PlayerAttack : MonoBehaviour
                 UpdateEnemyUI();
                 SaveEnemyHp();
                 PlayHitAnimation();
+                PlayHitShake();
 
                 if (enemy_hp <= 0)
                 {
@@ -359,6 +368,67 @@ public class PlayerAttack : MonoBehaviour
         }
         t.localScale = start;
         hitAnimCoroutine = null;
+    }
+
+    private void InitHitShake()
+    {
+        GameObject bg = GameObject.Find("Background1");
+        if (bg != null)
+        {
+            bgTransform = bg.transform;
+            bgInitPos = bgTransform.position;
+        }
+
+        GameObject arm = GameObject.Find("Arm");
+        if (arm != null)
+        {
+            armTransform = arm.transform;
+            armInitPos = armTransform.position;
+        }
+
+        w1InitPos = transform.position;
+        shakeInit = bgTransform != null || armTransform != null;
+    }
+
+    private void PlayHitShake()
+    {
+        if (!shakeInit)
+            return;
+        if (shakeCoroutine != null)
+        {
+            StopCoroutine(shakeCoroutine);
+            RestoreShakePositions();
+        }
+        shakeCoroutine = StartCoroutine(HitShake());
+    }
+
+    private void RestoreShakePositions()
+    {
+        if (bgTransform != null)
+            bgTransform.position = bgInitPos;
+        transform.position = w1InitPos;
+        if (armTransform != null)
+            armTransform.position = armInitPos;
+    }
+
+    private IEnumerator HitShake()
+    {
+        float e = 0f;
+        while (e < shakeDuration)
+        {
+            e += Time.deltaTime;
+            float k = Mathf.Clamp01(1f - e / shakeDuration);
+            Vector3 bgOff = (Vector3)(Random.insideUnitCircle * backgroundShakeAmp * k);
+            Vector3 armsOff = (Vector3)(Random.insideUnitCircle * armsShakeAmp * k);
+            if (bgTransform != null)
+                bgTransform.position = bgInitPos + bgOff;
+            transform.position = w1InitPos + armsOff;
+            if (armTransform != null)
+                armTransform.position = armInitPos + armsOff;
+            yield return null;
+        }
+        RestoreShakePositions();
+        shakeCoroutine = null;
     }
 
     // Пересчёт тира на живом враге (например, уровень упал 10→9 после смерти):
