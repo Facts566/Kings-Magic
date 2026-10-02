@@ -10,6 +10,17 @@ public class SaberShop : MonoBehaviour
     public Sprite katanaSprite;
     public Text feedbackText;
 
+    [Header("Carousel")]
+    public GameObject saberRow;
+    public GameObject katanaRow;
+    public Text saberRowText;
+    public Text katanaRowText;
+    public Button arrowLeft;
+    public Button arrowRight;
+
+    private const string SelectedKey = "shopSelected";
+    private int selectedIndex;
+
     public const string OwnedKey = "saberOwned";
     public const string KatanaOwnedKey = "katanaOwned";
     private const string DefaultSaberPath = "Sprites/Weapon2";
@@ -43,7 +54,82 @@ public class SaberShop : MonoBehaviour
     {
         Debug.Log("[SaberShop] Start. Owned = " + IsOwned() + ", Image = " + (equippedLayerImage != null ? equippedLayerImage.name : "null"));
 
+        selectedIndex = Mathf.Clamp(PlayerPrefs.GetInt(SelectedKey, 0), 0, 1);
+
+        if (arrowLeft != null)
+            arrowLeft.onClick.AddListener(PrevItem);
+        if (arrowRight != null)
+            arrowRight.onClick.AddListener(NextItem);
+
+        ShowSelected();
+    }
+
+    void OnEnable()
+    {
+        ShowSelected();
+    }
+
+    public void NextItem()
+    {
+        selectedIndex = (selectedIndex + 1) % 2;
+        PlayerPrefs.SetInt(SelectedKey, selectedIndex);
+        PlayerPrefs.Save();
+        ShowSelected();
+    }
+
+    public void PrevItem()
+    {
+        selectedIndex = (selectedIndex + 1) % 2;
+        PlayerPrefs.SetInt(SelectedKey, selectedIndex);
+        PlayerPrefs.Save();
+        ShowSelected();
+    }
+
+    private void ShowSelected()
+    {
+        bool showSaber = selectedIndex == 0;
+
+        if (saberRow != null)
+        {
+            saberRow.SetActive(showSaber);
+            if (showSaber) CenterRow(saberRow);
+        }
+        if (katanaRow != null)
+        {
+            katanaRow.SetActive(!showSaber);
+            if (!showSaber) CenterRow(katanaRow);
+        }
+
+        UpdateRowTexts();
         RefreshEquipVisual();
+    }
+
+    private void CenterRow(GameObject row)
+    {
+        RectTransform rt = row.GetComponent<RectTransform>();
+        if (rt != null)
+            rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, 0f);
+    }
+
+    private void UpdateRowTexts()
+    {
+        GameManager gm = GameManager.Instance;
+
+        if (saberRowText != null)
+        {
+            int dmg = gm != null ? gm.saberDamage : 3;
+            string status = !IsOwned() ? "Цена: " + price + "$"
+                : (gm != null && gm.saberEquipped ? "Экипировано" : "Куплено");
+            saberRowText.text = "Абордажная сабля\nУрон: " + dmg + " • " + status;
+        }
+
+        if (katanaRowText != null)
+        {
+            int dmg = gm != null ? gm.katanaDamage : 6;
+            string status = !IsKatanaOwned() ? "Цена: " + katanaPrice + "$"
+                : (gm != null && gm.katanaEquipped ? "Экипировано" : "Куплено");
+            katanaRowText.text = "Катана\nУрон: " + dmg + " • " + status;
+        }
     }
 
     public void BuySaber()
@@ -66,7 +152,7 @@ public class SaberShop : MonoBehaviour
         PlayerPrefs.SetInt(OwnedKey, 1);
         PlayerPrefs.Save();
 
-        RefreshEquipVisual();
+        ShowSelected();
         ShowMessage("Сабля куплена! Нажми на ячейку 2 чтобы экипировать");
     }
 
@@ -83,7 +169,7 @@ public class SaberShop : MonoBehaviour
         if (GameManager.Instance != null)
             GameManager.Instance.EquipSaber();
 
-        RefreshEquipVisual();
+        ShowSelected();
         ShowMessage("Экипировано: Меч");
     }
 
@@ -172,7 +258,7 @@ public class SaberShop : MonoBehaviour
         PlayerPrefs.SetInt(KatanaOwnedKey, 1);
         PlayerPrefs.Save();
 
-        RefreshEquipVisual();
+        ShowSelected();
         ShowMessage("Катана куплена! Нажми на ячейку 2 чтобы экипировать");
     }
 
@@ -189,7 +275,7 @@ public class SaberShop : MonoBehaviour
         if (GameManager.Instance != null)
             GameManager.Instance.EquipKatana();
 
-        RefreshEquipVisual();
+        ShowSelected();
         ShowMessage("Экипировано: Катана");
     }
 
