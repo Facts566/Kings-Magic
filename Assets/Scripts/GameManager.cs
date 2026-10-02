@@ -30,6 +30,8 @@ public class GameManager : MonoBehaviour
     public bool saberEquipped = false;
     public int katanaDamage = 6;
     public bool katanaEquipped = false;
+    // какой меч лежит во 2 ячейке инвентаря ("", "saber", "katana") — не зависит от того, что в руке
+    public string cell2Sword = "";
 
     public WeaponType currentWeaponType = WeaponType.CombatStyle;
 
