@@ -21,6 +21,10 @@ public class SaberShop : MonoBehaviour
     private const string SelectedKey = "shopSelected";
     private int selectedIndex;
 
+    [Header("Layout")]
+    [Tooltip("Высота выбранного ряда в контенте: больше = выше")]
+    public float selectedRowY = 60f;
+
     // Страховка: если привязки в сцене слетели — находим всё по именам
     private void ResolveRefs()
     {
@@ -145,7 +149,7 @@ public class SaberShop : MonoBehaviour
     {
         RectTransform rt = row.GetComponent<RectTransform>();
         if (rt != null)
-            rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, 0f);
+            rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, selectedRowY);
     }
 
     private void UpdateRowTexts()
