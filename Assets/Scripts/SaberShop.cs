@@ -159,16 +159,15 @@ public class SaberShop : MonoBehaviour
         if (saberRowText != null)
         {
             int dmg = gm != null ? gm.saberDamage : 3;
-            string status = !IsOwned() ? "Цена: " + price + "$"
-                : (gm != null && gm.saberEquipped ? "Экипировано" : "Куплено");
+            // купленное лежит в инвентаре (ячейка 2) — считается экипированным
+            string status = !IsOwned() ? "Цена: " + price + "$" : "Экипировано";
             saberRowText.text = "Абордажная сабля\nУрон: " + dmg + " • " + status;
         }
 
         if (katanaRowText != null)
         {
             int dmg = gm != null ? gm.katanaDamage : 6;
-            string status = !IsKatanaOwned() ? "Цена: " + katanaPrice + "$"
-                : (gm != null && gm.katanaEquipped ? "Экипировано" : "Куплено");
+            string status = !IsKatanaOwned() ? "Цена: " + katanaPrice + "$" : "Экипировано";
             katanaRowText.text = "Катана\nУрон: " + dmg + " • " + status;
         }
     }
