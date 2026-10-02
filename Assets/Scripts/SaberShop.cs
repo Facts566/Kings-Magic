@@ -21,6 +21,46 @@ public class SaberShop : MonoBehaviour
     private const string SelectedKey = "shopSelected";
     private int selectedIndex;
 
+    // Страховка: если привязки в сцене слетели — находим всё по именам
+    private void ResolveRefs()
+    {
+        if (saberRow == null)
+        {
+            GameObject g = GameObject.Find("Saber");
+            if (g != null) saberRow = g;
+        }
+        if (katanaRow == null)
+        {
+            GameObject g = GameObject.Find("Katana");
+            if (g != null) katanaRow = g;
+        }
+        if (saberRowText == null && saberRow != null)
+            saberRowText = saberRow.GetComponentInChildren<Text>(true);
+        if (katanaRowText == null && katanaRow != null)
+            katanaRowText = katanaRow.GetComponentInChildren<Text>(true);
+        if (arrowLeft == null)
+        {
+            GameObject g = GameObject.Find("ShopArrowLeft");
+            if (g != null) arrowLeft = g.GetComponent<Button>();
+        }
+        if (arrowRight == null)
+        {
+            GameObject g = GameObject.Find("ShopArrowRight");
+            if (g != null) arrowRight = g.GetComponent<Button>();
+        }
+
+        if (arrowLeft != null)
+        {
+            arrowLeft.onClick.RemoveListener(PrevItem);
+            arrowLeft.onClick.AddListener(PrevItem);
+        }
+        if (arrowRight != null)
+        {
+            arrowRight.onClick.RemoveListener(NextItem);
+            arrowRight.onClick.AddListener(NextItem);
+        }
+    }
+
     public const string OwnedKey = "saberOwned";
     public const string KatanaOwnedKey = "katanaOwned";
     private const string DefaultSaberPath = "Sprites/Weapon2";
@@ -56,16 +96,13 @@ public class SaberShop : MonoBehaviour
 
         selectedIndex = Mathf.Clamp(PlayerPrefs.GetInt(SelectedKey, 0), 0, 1);
 
-        if (arrowLeft != null)
-            arrowLeft.onClick.AddListener(PrevItem);
-        if (arrowRight != null)
-            arrowRight.onClick.AddListener(NextItem);
-
+        ResolveRefs();
         ShowSelected();
     }
 
     void OnEnable()
     {
+        ResolveRefs();
         ShowSelected();
     }
 
