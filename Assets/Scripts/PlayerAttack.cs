@@ -34,6 +34,13 @@ public class PlayerAttack : MonoBehaviour
     public float armsShakeAmp = 0.05f;
     public float shakeDuration = 0.18f;
 
+    [Header("Damage popup")]
+    [Tooltip("Всплывающая цифра урона над врагом")]
+    public float popupRiseHeight = 80f;
+    public float popupLifetime = 0.8f;
+    public int popupFontSize = 45;
+    public Color popupColor = new Color(1f, 0.85f, 0.3f, 1f);
+
     private Coroutine shakeCoroutine;
     private Transform bgTransform;
     private Transform armTransform;
@@ -308,6 +315,7 @@ public class PlayerAttack : MonoBehaviour
                 SaveEnemyHp();
                 PlayHitAnimation();
                 PlayHitShake();
+                SpawnDamagePopup(damage);
 
                 if (enemy_hp <= 0)
                 {
@@ -409,6 +417,74 @@ public class PlayerAttack : MonoBehaviour
         transform.position = w1InitPos;
         if (armTransform != null)
             armTransform.position = armInitPos;
+    }
+
+    // Цифра урона над головой врага: всплывает и гаснет
+    private void SpawnDamagePopup(int damage)
+    {
+        if (hpPanelParent == null || enemyObject == null)
+            return;
+
+        float halfH = 1f;
+        SpriteRenderer sr = enemyObject.GetComponentInChildren<SpriteRenderer>();
+        if (sr != null && sr.sprite != null)
+        {
+            float sy = enemyScaleInit ? enemyInitialScale.y : enemyObject.transform.localScale.y;
+            if (Mathf.Abs(sy) < 0.01f) sy = 1f;
+            halfH = sr.sprite.bounds.extents.y * Mathf.Abs(sy);
+        }
+        Vector3 world = enemyObject.transform.position + new Vector3(0f, halfH + 0.5f, 0f);
+        Vector3 screen = mainCam != null ? mainCam.WorldToScreenPoint(world) : world;
+
+        Camera uiCam = (parentCanvas != null && parentCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            ? (parentCanvas.worldCamera != null ? parentCanvas.worldCamera : mainCam)
+            : null;
+
+        Vector2 local;
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(hpPanelParent, screen, uiCam, out local))
+            return;
+        local.x += Random.Range(-30f, 30f);
+
+        GameObject go = new GameObject("DamagePopup");
+        RectTransform rt = go.AddComponent<RectTransform>();
+        rt.SetParent(hpPanelParent, false);
+        rt.sizeDelta = new Vector2(300f, 80f);
+        rt.anchoredPosition = local;
+
+        Text t = go.AddComponent<Text>();
+        t.font = enemy_hp_text != null ? enemy_hp_text.font : Resources.GetBuiltinResource<Font>("Arial.ttf");
+        t.fontSize = popupFontSize;
+        t.fontStyle = FontStyle.Bold;
+        t.alignment = TextAnchor.MiddleCenter;
+        t.horizontalOverflow = HorizontalWrapMode.Overflow;
+        t.verticalOverflow = VerticalWrapMode.Overflow;
+        t.raycastTarget = false;
+        t.color = popupColor;
+        t.text = "-" + damage.ToString();
+
+        StartCoroutine(DamagePopupAnim(rt, t));
+    }
+
+    private IEnumerator DamagePopupAnim(RectTransform rt, Text t)
+    {
+        float e = 0f;
+        Vector2 start = rt.anchoredPosition;
+        while (e < popupLifetime)
+        {
+            e += Time.deltaTime;
+            float p = Mathf.Clamp01(e / popupLifetime);
+            if (rt != null)
+                rt.anchoredPosition = start + new Vector2(0f, popupRiseHeight * p);
+            if (t != null)
+            {
+                Color c = t.color;
+                c.a = 1f - p;
+                t.color = c;
+            }
+            yield return null;
+        }
+        if (rt != null)
+            Destroy(rt.gameObject);
     }
 
     private IEnumerator HitShake()
