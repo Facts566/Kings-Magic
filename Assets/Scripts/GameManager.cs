@@ -247,9 +247,9 @@ public class GameManager : MonoBehaviour
 
     public void OnPlayerDied()
     {
-        coins = 0;
-        if (level > 0)
-            level = Mathf.Max(0, level - 1);
+        // штраф смерти: -10% монет, уровень не понижается
+        int loss = Mathf.FloorToInt(coins * 0.1f);
+        coins = Mathf.Max(0, coins - loss);
         xp = 0;
         RefreshUI();
         Save();
