@@ -62,6 +62,7 @@ public class PlayerAttack : MonoBehaviour
     public int tier2MinPlayerLevel = 10;
     public int tier3MinPlayerLevel = 15;
     public int tier4MinPlayerLevel = 25;
+    public int tier5MinPlayerLevel = 30;
     public string tier1Name = "Бандит";
     public int tier1EnemyLevel = 5;
     public int tier1Hp = 100;
@@ -90,15 +91,24 @@ public class PlayerAttack : MonoBehaviour
     public int tier4Coins = 2150;
     public int tier4Xp = 11000;
     public int tier4Honor = 625;
+    public string tier5Name = "Пират";
+    public int tier5EnemyLevel = 35;
+    public int tier5Hp = 700;
+    public int tier5Damage = 22;
+    public int tier5Coins = 300;
+    public int tier5Xp = 1300;
+    public int tier5Honor = 0;
     public Text enemyNameText;
     public Sprite tier1EnemySprite;
     public Sprite tier2EnemySprite;
     public Sprite tier3EnemySprite;
     public Sprite tier4EnemySprite;
+    public Sprite tier5EnemySprite;
     public Sprite tier1BackgroundSprite;
     public Sprite tier2BackgroundSprite;
     public Sprite tier3BackgroundSprite;
     public Sprite tier4BackgroundSprite;
+    public Sprite tier5BackgroundSprite;
 
     private EnemyAttack enemyAttack;
     private int maxEnemyHp;
@@ -114,12 +124,13 @@ public class PlayerAttack : MonoBehaviour
         inspectorMaxHp = enemy_hp;
     }
 
-    // 0 = Бандит (<10), 1 = Джунглевый житель (10+), 2 = Горилла (15+), 3 = Президент (25+)
+    // 0 = Бандит (<10), 1 = Житель (10+), 2 = Горилла (15+), 3 = Президент (25+), 4 = Пират (30+)
     public int GetTierIndex()
     {
         if (GameManager.Instance == null)
             return 0;
         int lvl = GameManager.Instance.level;
+        if (lvl >= tier5MinPlayerLevel) return 4;
         if (lvl >= tier4MinPlayerLevel) return 3;
         if (lvl >= tier3MinPlayerLevel) return 2;
         if (lvl >= tier2MinPlayerLevel) return 1;
@@ -130,6 +141,10 @@ public class PlayerAttack : MonoBehaviour
     {
         switch (t)
         {
+            case 4:
+                name = tier5Name; level = tier5EnemyLevel; hp = tier5Hp; damage = tier5Damage;
+                enemySprite = tier5EnemySprite; bgSprite = tier5BackgroundSprite;
+                break;
             case 3:
                 name = tier4Name; level = tier4EnemyLevel; hp = tier4Hp; damage = tier4Damage;
                 enemySprite = tier4EnemySprite; bgSprite = tier4BackgroundSprite;
@@ -153,6 +168,7 @@ public class PlayerAttack : MonoBehaviour
     {
         switch (t)
         {
+            case 4: coins = tier5Coins; xp = tier5Xp; honor = tier5Honor; break;
             case 3: coins = tier4Coins; xp = tier4Xp; honor = tier4Honor; break;
             case 2: coins = tier3Coins; xp = tier3Xp; honor = tier3Honor; break;
             case 1: coins = tier2Coins; xp = tier2Xp; honor = tier2Honor; break;
