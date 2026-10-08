@@ -174,12 +174,14 @@
     <Compile Include="Assets/YandexMobileAds/Platforms/iOS/AppOpenAdLoaderClient.cs" />
     <Compile Include="Assets/Scripts/AdsTimer.cs" />
     <Compile Include="Assets/YandexMobileAds/Common/IAppStateObserverClient.cs" />
+    <Compile Include="Assets/Scripts/VolumeSlider.cs" />
     <Compile Include="Assets/YandexMobileAds/RewardedAdLoader.cs" />
     <Compile Include="Assets/YandexMobileAds/Platforms/Android/AppOpenAdClient.cs" />
     <Compile Include="Assets/YandexMobileAds/Interstitial.cs" />
     <Compile Include="Assets/YandexMobileAds/Common/MainThreadDispatcher.cs" />
     <Compile Include="Assets/YandexMobileAds/Base/AdError.cs" />
     <Compile Include="Assets/YandexMobileAds/Base/AdTargeting.cs" />
+    <Compile Include="Assets/Scripts/VolumeController.cs" />
     <Compile Include="Assets/YandexMobileAds/Base/AdLoadingException.cs" />
     <Compile Include="Assets/YandexMobileAds/Common/IRewardedAdLoaderClient.cs" />
     <Compile Include="Assets/YandexMobileAds/Base/AdRequestError.cs" />
