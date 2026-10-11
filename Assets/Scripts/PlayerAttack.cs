@@ -63,6 +63,12 @@ public class PlayerAttack : MonoBehaviour
     public int tier3MinPlayerLevel = 15;
     public int tier4MinPlayerLevel = 25;
     public int tier5MinPlayerLevel = 30;
+    // Грубиян спавнится на 40-55 уровнях игрока
+    public int tier6MinPlayerLevel = 40;
+    public int tier6MaxPlayerLevel = 55;
+    // Шеф спавнится на 55-60 уровнях игрока (дальше остаётся финальным тиром)
+    public int tier7MinPlayerLevel = 55;
+    public int tier7MaxPlayerLevel = 60;
     public string tier1Name = "Бандит";
     public int tier1EnemyLevel = 5;
     public int tier1Hp = 100;
@@ -98,17 +104,35 @@ public class PlayerAttack : MonoBehaviour
     public int tier5Coins = 300;
     public int tier5Xp = 1300;
     public int tier5Honor = 0;
+    public string tier6Name = "Грубиян";
+    public int tier6EnemyLevel = 45;
+    public int tier6Hp = 615;
+    public int tier6Damage = 29;
+    public int tier6Coins = 350;
+    public int tier6Xp = 2200;
+    public int tier6Honor = 0;
+    public string tier7Name = "Шеф";
+    public int tier7EnemyLevel = 55;
+    public int tier7Hp = 1780;
+    public int tier7Damage = 56;
+    public int tier7Coins = 8100;
+    public int tier7Xp = 50500;
+    public int tier7Honor = 1375;
     public Text enemyNameText;
     public Sprite tier1EnemySprite;
     public Sprite tier2EnemySprite;
     public Sprite tier3EnemySprite;
     public Sprite tier4EnemySprite;
     public Sprite tier5EnemySprite;
+    public Sprite tier6EnemySprite;
+    public Sprite tier7EnemySprite;
     public Sprite tier1BackgroundSprite;
     public Sprite tier2BackgroundSprite;
     public Sprite tier3BackgroundSprite;
     public Sprite tier4BackgroundSprite;
     public Sprite tier5BackgroundSprite;
+    public Sprite tier6BackgroundSprite;
+    public Sprite tier7BackgroundSprite;
 
     private EnemyAttack enemyAttack;
     private int maxEnemyHp;
@@ -124,12 +148,15 @@ public class PlayerAttack : MonoBehaviour
         inspectorMaxHp = enemy_hp;
     }
 
-    // 0 = Бандит (<10), 1 = Житель (10+), 2 = Горилла (15+), 3 = Президент (25+), 4 = Пират (30+)
+    // 0 = Бандит (<10), 1 = Житель (10+), 2 = Горилла (15+), 3 = Президент (25+),
+    // 4 = Пират (30+), 5 = Грубиян (40-55), 6 = Шеф (55+, босс)
     public int GetTierIndex()
     {
         if (GameManager.Instance == null)
             return 0;
         int lvl = GameManager.Instance.level;
+        if (lvl >= tier7MinPlayerLevel) return 6;
+        if (lvl >= tier6MinPlayerLevel) return 5;
         if (lvl >= tier5MinPlayerLevel) return 4;
         if (lvl >= tier4MinPlayerLevel) return 3;
         if (lvl >= tier3MinPlayerLevel) return 2;
@@ -141,6 +168,14 @@ public class PlayerAttack : MonoBehaviour
     {
         switch (t)
         {
+            case 6:
+                name = tier7Name; level = tier7EnemyLevel; hp = tier7Hp; damage = tier7Damage;
+                enemySprite = tier7EnemySprite; bgSprite = tier7BackgroundSprite;
+                break;
+            case 5:
+                name = tier6Name; level = tier6EnemyLevel; hp = tier6Hp; damage = tier6Damage;
+                enemySprite = tier6EnemySprite; bgSprite = tier6BackgroundSprite;
+                break;
             case 4:
                 name = tier5Name; level = tier5EnemyLevel; hp = tier5Hp; damage = tier5Damage;
                 enemySprite = tier5EnemySprite; bgSprite = tier5BackgroundSprite;
@@ -168,6 +203,8 @@ public class PlayerAttack : MonoBehaviour
     {
         switch (t)
         {
+            case 6: coins = tier7Coins; xp = tier7Xp; honor = tier7Honor; break;
+            case 5: coins = tier6Coins; xp = tier6Xp; honor = tier6Honor; break;
             case 4: coins = tier5Coins; xp = tier5Xp; honor = tier5Honor; break;
             case 3: coins = tier4Coins; xp = tier4Xp; honor = tier4Honor; break;
             case 2: coins = tier3Coins; xp = tier3Xp; honor = tier3Honor; break;
