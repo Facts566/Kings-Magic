@@ -2012,7 +2012,7 @@ MonoBehaviour:
   tier5Coins: 300
   tier5Xp: 1300
   tier5Honor: 0
-  tier6Name: "\u0413\u0440\u0443\u0431\u0438\u044f\u043D"
+  tier6Name: "\u0413\u0440\u0443\u0431\u0438\u044F\u043D"
   tier6EnemyLevel: 45
   tier6Hp: 615
   tier6Damage: 29
