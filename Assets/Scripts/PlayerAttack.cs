@@ -118,6 +118,15 @@ public class PlayerAttack : MonoBehaviour
     public int tier7Coins = 8100;
     public int tier7Xp = 50500;
     public int tier7Honor = 1375;
+    [Header("Enemy scale")]
+    [Tooltip("Масштаб врага для каждого тира, 1 = как выставлено в сцене")]
+    public float tier1EnemyScale = 1f;
+    public float tier2EnemyScale = 1f;
+    public float tier3EnemyScale = 1f;
+    public float tier4EnemyScale = 1f;
+    public float tier5EnemyScale = 0.3333f; // Пират втрое меньше остальных
+    public float tier6EnemyScale = 1f;
+    public float tier7EnemyScale = 1f;
     public Text enemyNameText;
     public Sprite tier1EnemySprite;
     public Sprite tier2EnemySprite;
@@ -138,6 +147,7 @@ public class PlayerAttack : MonoBehaviour
     private int maxEnemyHp;
     private Coroutine hitAnimCoroutine;
     private Vector3 enemyInitialScale;
+    private Vector3 baseEnemyScale;
     private bool enemyScaleInit;
 
     private const string SaveEnemyHpKey = "enemy_hp";
@@ -164,37 +174,37 @@ public class PlayerAttack : MonoBehaviour
         return 0;
     }
 
-    private void TierStats(int t, out string name, out int level, out int hp, out int damage, out Sprite enemySprite, out Sprite bgSprite)
+    private void TierStats(int t, out string name, out int level, out int hp, out int damage, out Sprite enemySprite, out Sprite bgSprite, out float scale)
     {
         switch (t)
         {
             case 6:
                 name = tier7Name; level = tier7EnemyLevel; hp = tier7Hp; damage = tier7Damage;
-                enemySprite = tier7EnemySprite; bgSprite = tier7BackgroundSprite;
+                enemySprite = tier7EnemySprite; bgSprite = tier7BackgroundSprite; scale = tier7EnemyScale;
                 break;
             case 5:
                 name = tier6Name; level = tier6EnemyLevel; hp = tier6Hp; damage = tier6Damage;
-                enemySprite = tier6EnemySprite; bgSprite = tier6BackgroundSprite;
+                enemySprite = tier6EnemySprite; bgSprite = tier6BackgroundSprite; scale = tier6EnemyScale;
                 break;
             case 4:
                 name = tier5Name; level = tier5EnemyLevel; hp = tier5Hp; damage = tier5Damage;
-                enemySprite = tier5EnemySprite; bgSprite = tier5BackgroundSprite;
+                enemySprite = tier5EnemySprite; bgSprite = tier5BackgroundSprite; scale = tier5EnemyScale;
                 break;
             case 3:
                 name = tier4Name; level = tier4EnemyLevel; hp = tier4Hp; damage = tier4Damage;
-                enemySprite = tier4EnemySprite; bgSprite = tier4BackgroundSprite;
+                enemySprite = tier4EnemySprite; bgSprite = tier4BackgroundSprite; scale = tier4EnemyScale;
                 break;
             case 2:
                 name = tier3Name; level = tier3EnemyLevel; hp = tier3Hp; damage = tier3Damage;
-                enemySprite = tier3EnemySprite; bgSprite = tier3BackgroundSprite;
+                enemySprite = tier3EnemySprite; bgSprite = tier3BackgroundSprite; scale = tier3EnemyScale;
                 break;
             case 1:
                 name = tier2Name; level = tier2EnemyLevel; hp = tier2Hp; damage = tier2Damage;
-                enemySprite = tier2EnemySprite; bgSprite = tier2BackgroundSprite;
+                enemySprite = tier2EnemySprite; bgSprite = tier2BackgroundSprite; scale = tier2EnemyScale;
                 break;
             default:
                 name = tier1Name; level = tier1EnemyLevel; hp = tier1Hp; damage = tier1Damage;
-                enemySprite = tier1EnemySprite; bgSprite = tier1BackgroundSprite;
+                enemySprite = tier1EnemySprite; bgSprite = tier1BackgroundSprite; scale = tier1EnemyScale;
                 break;
         }
     }
@@ -216,7 +226,7 @@ public class PlayerAttack : MonoBehaviour
     private void ApplyTier()
     {
         int t = GetTierIndex();
-        TierStats(t, out string eName, out int eLevel, out int eHp, out int eDamage, out Sprite eSprite, out Sprite bSprite);
+        TierStats(t, out string eName, out int eLevel, out int eHp, out int eDamage, out Sprite eSprite, out Sprite bSprite, out float eScale);
 
         maxEnemyHp = eHp;
         if (maxEnemyHp <= 0) maxEnemyHp = inspectorMaxHp;
@@ -232,6 +242,8 @@ public class PlayerAttack : MonoBehaviour
                 sr.sprite = eSprite;
         }
 
+        ApplyEnemyScale(eScale);
+
         SpriteRenderer bsr = ResolveBackground();
         if (bsr != null && bSprite != null)
             bsr.sprite = bSprite;
@@ -243,6 +255,29 @@ public class PlayerAttack : MonoBehaviour
             enemy_hp_slider.maxValue = maxEnemyHp;
     }
 
+    // Масштаб врага = базовый масштаб из сцены * множитель тира.
+// enemyInitialScale всегда хранит уже итоговый размер — от него считаются
+// анимация удара и высота HP-бара над головой.
+private void ApplyEnemyScale(float scale)
+    {
+        if (enemyObject == null)
+            return;
+
+        if (!enemyScaleInit)
+        {
+            baseEnemyScale = enemyObject.transform.localScale;
+            enemyScaleInit = true;
+        }
+
+        if (scale <= 0f)
+            scale = 1f;
+
+        enemyInitialScale = baseEnemyScale * scale;
+
+        if (!isEnemyDead)
+            enemyObject.transform.localScale = enemyInitialScale;
+    }
+
     void Start()
     {
         if (enemyAttack == null)
@@ -250,6 +285,13 @@ public class PlayerAttack : MonoBehaviour
             enemyAttack = FindObjectOfType<EnemyAttack>();
             if (enemyAttack != null)
                 enemyObject = enemyAttack.gameObject;
+        }
+
+        // базовый масштаб врага снимаем до ApplyTier(), он его потом умножит на множитель тира
+        if (enemyObject != null)
+        {
+            baseEnemyScale = enemyObject.transform.localScale;
+            enemyScaleInit = true;
         }
 
         ApplyTier();
@@ -274,12 +316,6 @@ public class PlayerAttack : MonoBehaviour
         else
         {
             enemy_hp = maxEnemyHp;
-        }
-
-        if (enemyObject != null)
-        {
-            enemyInitialScale = enemyObject.transform.localScale;
-            enemyScaleInit = true;
         }
 
         if (enemy_hp_slider != null)
@@ -389,7 +425,8 @@ public class PlayerAttack : MonoBehaviour
         if (enemyObject == null) return;
         if (!enemyScaleInit)
         {
-            enemyInitialScale = enemyObject.transform.localScale;
+            baseEnemyScale = enemyObject.transform.localScale;
+            enemyInitialScale = baseEnemyScale;
             enemyScaleInit = true;
         }
         if (hitAnimCoroutine != null)

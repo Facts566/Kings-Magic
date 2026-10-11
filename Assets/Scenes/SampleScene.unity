@@ -2026,6 +2026,13 @@ MonoBehaviour:
   tier7Coins: 8100
   tier7Xp: 50500
   tier7Honor: 1375
+  tier1EnemyScale: 1
+  tier2EnemyScale: 1
+  tier3EnemyScale: 1
+  tier4EnemyScale: 1
+  tier5EnemyScale: 0.3333
+  tier6EnemyScale: 1
+  tier7EnemyScale: 1
   enemyNameText: {fileID: 2062743625}
   tier1EnemySprite: {fileID: 21300000, guid: df65eb46c49375fa1be633550d745ae5, type: 3}
   tier2EnemySprite: {fileID: 21300000, guid: a1aef2b74a8ebfc249130f0cbe43ae22, type: 3}
