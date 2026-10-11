@@ -1,7 +1,6 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 // ===========================================================================
@@ -10,7 +9,8 @@ using UnityEngine.UI;
 //  Assets/Scripts/DebugCheats.cs (+ .meta) и блоки Cheat* в
 //  GameManager.cs / EnemyAttack.cs / PlayerAttack.cs
 //
-//  Открытие: 5 быстрых тапов подряд (2.5 сек) по любой надписи на экране.
+//  Открытие: кнопка "Ч" в левом нижнем углу, либо два пальца одновременно
+//  в любом месте экрана, либо правая кнопка мыши (в редакторе).
 //  Панель рисуется кодом, в сцене ничего менять не нужно.
 // ===========================================================================
 public class DebugCheats : MonoBehaviour
@@ -18,21 +18,18 @@ public class DebugCheats : MonoBehaviour
     // главный выключатель: false = панель не создаётся вообще
     private static readonly bool CheatsOn = true;
 
-    private const int TapsToOpen = 5;   // столько тапов по надписи открывают панель
-    private const float TapWindow = 2.5f; // окно между тапами, сек
-
     private static Font s_font;
     private static Sprite s_white;
 
+    private GameObject openerCanvas;
     private GameObject canvasGo;
     private Text statusText;
     private Text confirmText;
     private InputField levelInput;
     private Coroutine confirmRoutine;
 
-    private int taps;
-    private float lastTapTime;
     private bool resetArmed;
+    private bool multiTouchLatch;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void AutoSpawn()
@@ -52,65 +49,60 @@ public class DebugCheats : MonoBehaviour
         // ждём, пока Awake/Start остальных скриптов отработают и ссылки встанут
         yield return null;
         yield return null;
+        BuildOpener();
         BuildPanel();
-        HookSecretTaps();
     }
 
     // ------------------------------------------------------------------
-    // Скрытый триггер: серия тапов по надписи уровня/монет
+    // Жесты, которые не могут перехватить нажатия обычных кнопок:
+    // два пальца одновременно (телефон) или правая кнопка мыши (редактор)
     // ------------------------------------------------------------------
-    private void HookSecretTaps()
-    {
-        GameManager gm = GameManager.Instance;
-        if (gm != null)
-        {
-            HookTap(gm.levelText != null ? gm.levelText.gameObject : null);
-            HookTap(gm.coinsText != null ? gm.coinsText.gameObject : null);
-            HookTap(gm.honorText != null ? gm.honorText.gameObject : null);
-        }
-
-        // запасной путь: подцепиться к любой надписи на экране,
-        // чтобы панель открылась независимо от того, что перекрывает HUD
-        Text[] texts = FindObjectsOfType<Text>();
-        for (int i = 0; i < texts.Length; i++)
-        {
-            if (texts[i] != null)
-                HookTap(texts[i].gameObject);
-        }
-    }
-
-    private void HookTap(GameObject go)
-    {
-        if (go == null) return;
-
-        EventTrigger trigger = go.GetComponent<EventTrigger>();
-        if (trigger == null)
-            trigger = go.AddComponent<EventTrigger>();
-
-        EventTrigger.Entry entry = new EventTrigger.Entry();
-        entry.eventID = EventTriggerType.PointerClick;
-        // UnityAction<BaseEventData> требует ровно один параметр, поэтому лямбда,
-        // а не прямая ссылка на метод без параметров
-        entry.callback.AddListener(new UnityAction<BaseEventData>(data => OnSecretTap()));
-        trigger.triggers.Add(entry);
-    }
-
-    private void OnSecretTap()
+    void Update()
     {
         if (canvasGo != null && canvasGo.activeSelf)
             return;
 
-        if (Time.unscaledTime - lastTapTime > TapWindow)
-            taps = 0;
-
-        lastTapTime = Time.unscaledTime;
-        taps++;
-
-        if (taps >= TapsToOpen)
-        {
-            taps = 0;
+        bool multi = Input.touchCount >= 2;
+        if (multi && !multiTouchLatch)
             OpenPanel();
-        }
+        multiTouchLatch = multi;
+
+        if (Input.GetMouseButtonDown(1))
+            OpenPanel();
+    }
+
+    // ------------------------------------------------------------------
+    // Кнопка-открыватель в свободном левом нижнем углу (всегда активна)
+    // ------------------------------------------------------------------
+    private void BuildOpener()
+    {
+        openerCanvas = new GameObject("CheatOpenerCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+        Canvas canvas = openerCanvas.GetComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 31000; // ниже панели, но выше игрового HUD
+
+        CanvasScaler scaler = openerCanvas.GetComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(720f, 1604f);
+        scaler.matchWidthOrHeight = 0f;
+
+        GameObject go = NewUI("CheatOpener", openerCanvas.transform);
+        RectTransform rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.zero;
+        rt.pivot = Vector2.zero;
+        rt.sizeDelta = new Vector2(110f, 110f);
+        rt.anchoredPosition = new Vector2(22f, 22f);
+
+        Image img = go.AddComponent<Image>();
+        img.sprite = WhiteSprite();
+        img.color = new Color(0.45f, 0.1f, 0.1f, 0.75f);
+
+        Button button = go.AddComponent<Button>();
+        button.targetGraphic = img;
+
+        MakeText("Label", go.transform, "Ч", 54, Color.white, new Vector2(110f, 110f), Vector2.zero);
+        button.onClick.AddListener(OpenPanel);
     }
 
     private void OpenPanel()
