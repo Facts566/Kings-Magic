@@ -418,6 +418,63 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // ==============================================================
+    //  ТЕСТОВЫЕ ЧИТЫ (временные) — вызываются из DebugCheats.cs
+    //  Убрать вместе с Assets/Scripts/DebugCheats.cs
+    // ==============================================================
+    public void CheatSetLevel(int newLevel)
+    {
+        newLevel = Mathf.Clamp(newLevel, 1, maxLevel);
+
+        int diff = newLevel - level;
+        level = newLevel;
+        if (diff > 0)
+            statPoints += diff * statPointsPerLevel;
+        if (level >= maxLevel)
+            xp = 0;
+
+        displayedLevel = -1; // форсируем обновление надписи "Lvl N %"
+        ApplyStatBonuses();
+        RefreshUI();
+        Save();
+
+        // сразу пересчитываем тир врага — удобно проверять новых врагов
+        if (enemyAttack == null)
+            enemyAttack = FindObjectOfType<EnemyAttack>();
+        if (enemyAttack != null && enemyAttack.PA != null)
+            enemyAttack.PA.RefreshTierLive();
+    }
+
+    public void CheatAddCoins(int amount)
+    {
+        coins = Mathf.Max(0, coins + amount);
+        RefreshUI();
+        Save();
+    }
+
+    public void CheatAddHonor(int amount)
+    {
+        honor = Mathf.Max(0, honor + amount);
+        RefreshUI();
+        Save();
+    }
+
+    public void CheatAddXp(int amount)
+    {
+        AddExperience(amount);
+        RefreshUI();
+        Save();
+    }
+
+    public void CheatResetAll()
+    {
+        ResetProgress();
+
+        SaberShop shop = FindObjectOfType<SaberShop>();
+        if (shop != null)
+            shop.ResetSaber();
+    }
+
     public enum WeaponType { CombatStyle, Sword, Weapon, Magic }
 
     private enum StatType { Melee, Defense, Sword, Weapon, Magic }

@@ -139,6 +139,7 @@
     <Compile Include="Assets/YandexMobileAds/Base/GenericEventArgs.cs" />
     <Compile Include="Assets/Scripts/DodgeController.cs" />
     <Compile Include="Assets/YandexMobileAds/Base/AdRequestCreator.cs" />
+    <Compile Include="Assets/Scripts/DebugCheats.cs" />
     <Compile Include="Assets/YandexMobileAds/Platforms/Android/ScreenClient.cs" />
     <Compile Include="Assets/YandexMobileAds/Platforms/iOS/AppOpenAdLoaderBridge.cs" />
     <Compile Include="Assets/YandexMobileAds/Common/IInterstitialAdLoaderClient.cs" />

@@ -593,6 +593,36 @@ public class PlayerAttack : MonoBehaviour
             enemyObject.transform.localScale = enemyInitialScale;
     }
 
+    // ТЕСТОВЫЕ ЧИТЫ (временные) — вызываются из DebugCheats.cs
+    // Мгновенно убивает врага и выдаёт дроп его тира (удобно проверять награды)
+    public void CheatKillEnemy()
+    {
+        if (isEnemyDead)
+            return;
+
+        enemy_hp = 0;
+        displayedEnemyHp = 0;
+        isEnemyDead = true;
+        SetEnemyVisible(false);
+        SetEnemyUIEnabled(false);
+        UpdateEnemyUI();
+        SaveEnemyHp();
+
+        if (GameManager.Instance != null)
+        {
+            TierRewards(GetTierIndex(), out int rc, out int rx, out int rh);
+            GameManager.Instance.OnEnemyKilled(rc, rx, rh);
+        }
+
+        StartCoroutine(RespawnEnemy());
+    }
+
+    // ТЕСТОВЫЙ ЧИТ (временный) — полный откат HP врага к максимуму
+    public void CheatRespawnEnemyNow()
+    {
+        StartCoroutine(RespawnEnemy());
+    }
+
     private void SetEnemyUIEnabled(bool visible)
     {
         if (enemy_hp_slider != null)

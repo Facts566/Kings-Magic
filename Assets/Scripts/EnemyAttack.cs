@@ -269,6 +269,23 @@ public class EnemyAttack : MonoBehaviour
         SaveHp();
     }
 
+    // ТЕСТОВЫЙ ЧИТ (временный) — полное восстановление HP/ST и снятие смерти
+    public void CheatFullRestore()
+    {
+        player_hp = max_player_hp;
+        player_energy = max_player_energy;
+        isPlayerDead = false;
+
+        displayedHp = player_hp;
+        displayedEnergy = player_energy;
+
+        if (player_hp_slider != null) player_hp_slider.value = player_hp;
+        if (player_energy_slider != null) player_energy_slider.value = player_energy;
+
+        UpdatePlayerUI();
+        SaveHp();
+    }
+
     public bool TrySpendEnergy(int cost)
     {
         if (player_energy < cost)
