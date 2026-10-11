@@ -15,7 +15,7 @@ using UnityEngine.UI;
 public class DebugCheats : MonoBehaviour
 {
     // главный выключатель: false = панель не создаётся вообще
-    private const bool CheatsOn = true;
+    private static readonly bool CheatsOn = true;
 
     private const int TapsToOpen = 5;   // столько тапов по надписи открывают панель
     private const float TapWindow = 2.5f; // окно между тапами, сек
@@ -88,7 +88,7 @@ public class DebugCheats : MonoBehaviour
 
         EventTrigger.Entry entry = new EventTrigger.Entry();
         entry.eventID = EventTriggerType.PointerClick;
-        entry.callback.AddListener(OnSecretTap);
+        entry.callback.AddListener((data) => OnSecretTap());
         trigger.triggers.Add(entry);
     }
 
