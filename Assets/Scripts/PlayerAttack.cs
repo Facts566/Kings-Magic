@@ -232,13 +232,9 @@ public class PlayerAttack : MonoBehaviour
                 sr.sprite = eSprite;
         }
 
-        GameObject bg = GameObject.Find("Background1");
-        if (bg != null)
-        {
-            SpriteRenderer bsr = bg.GetComponent<SpriteRenderer>();
-            if (bsr != null && bSprite != null)
-                bsr.sprite = bSprite;
-        }
+        SpriteRenderer bsr = ResolveBackground();
+        if (bsr != null && bSprite != null)
+            bsr.sprite = bSprite;
 
         if (enemyNameText != null)
             enemyNameText.text = eName + " " + eLevel.ToString() + " ур";
@@ -431,12 +427,60 @@ public class PlayerAttack : MonoBehaviour
         hitAnimCoroutine = null;
     }
 
+    // Фон в сцене называется "Background" (исторически искали "Background1"),
+// поэтому ищем по SpriteRenderer, а не по точному имени объекта
+private SpriteRenderer bgRenderer;
+
+    private static bool IsBackgroundName(string n)
+    {
+        return n == "Background1" || n == "Background" || n.StartsWith("Background_");
+    }
+
+    private SpriteRenderer ResolveBackground()
+    {
+        if (bgRenderer != null)
+            return bgRenderer;
+
+        SpriteRenderer[] all = FindObjectsOfType<SpriteRenderer>();
+        SpriteRenderer best = null;
+        float bestArea = 0f;
+
+        // 1) спрайты на объектах с именем фона
+        for (int i = 0; i < all.Length; i++)
+        {
+            SpriteRenderer sr = all[i];
+            if (sr == null || sr.sprite == null) continue;
+            if (enemyObject != null && sr.transform.IsChildOf(enemyObject.transform)) continue;
+            if (!IsBackgroundName(sr.gameObject.name)) continue;
+            float area = sr.bounds.size.x * sr.bounds.size.y;
+            if (area > bestArea) { bestArea = area; best = sr; }
+        }
+
+        // 2) запасной путь: самый большой спрайт в сцене (фон всегда крупнее врага)
+        if (best == null)
+        {
+            for (int i = 0; i < all.Length; i++)
+            {
+                SpriteRenderer sr = all[i];
+                if (sr == null || sr.sprite == null) continue;
+                if (enemyObject != null && sr.transform.IsChildOf(enemyObject.transform)) continue;
+                float area = sr.bounds.size.x * sr.bounds.size.y;
+                if (area > bestArea) { bestArea = area; best = sr; }
+            }
+        }
+
+        bgRenderer = best;
+        if (bgRenderer != null)
+            bgTransform = bgRenderer.transform;
+        return bgRenderer;
+    }
+
     private void InitHitShake()
     {
-        GameObject bg = GameObject.Find("Background1");
-        if (bg != null)
+        SpriteRenderer bsr = ResolveBackground();
+        if (bsr != null)
         {
-            bgTransform = bg.transform;
+            bgTransform = bsr.transform;
             bgInitPos = bgTransform.position;
         }
 
