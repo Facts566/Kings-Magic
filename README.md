@@ -5,7 +5,7 @@
 
 Проект сделан на **Unity 2022.3.62f3**, платформы сборки — WebGL и Android.
 
-![Иконка](Assets/icon.png)
+![Иконка](Assets/Icon.png)
 
 ## Игровой цикл
 
