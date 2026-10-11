@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -88,7 +89,9 @@ public class DebugCheats : MonoBehaviour
 
         EventTrigger.Entry entry = new EventTrigger.Entry();
         entry.eventID = EventTriggerType.PointerClick;
-        entry.callback.AddListener((data) => OnSecretTap());
+        // UnityAction<BaseEventData> требует ровно один параметр, поэтому лямбда,
+        // а не прямая ссылка на метод без параметров
+        entry.callback.AddListener(new UnityAction<BaseEventData>(data => OnSecretTap()));
         trigger.triggers.Add(entry);
     }
 
